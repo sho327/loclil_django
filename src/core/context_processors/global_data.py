@@ -25,4 +25,5 @@ def global_settings(request):
         "APP_DEBUG_MODE": settings.DEBUG,
         # ユーザー権限 (管理者か否か)
         "IS_ADMIN": is_authenticated and user.is_superuser,
+        # IS_AUTHENTICATEDはテンプレートからも簡単に確認可能(テンプレート変数を使っても冗長にならないのでここに含めない)
     }
