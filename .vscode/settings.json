@@ -1,0 +1,29 @@
+{
+  // これはそのまま残してOK
+  "editor.formatOnSave": true,
+
+  // 【修正】Pythonファイル以外（HTML, JSなど）のデフォルトフォーマッターはPrettierのままでOK
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  // 【追記】isortによるインポート整理を保存時に実行する設定
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+
+  // これはそのまま残してOK（タブの設定）
+  "editor.tabSize": 4,
+  "editor.insertSpaces": false,
+
+  // 【追記】ここからがPythonファイル(.py)に限定した設定です
+  "[python]": {
+    // PythonファイルのデフォルトのフォーマッターをBlackに設定（最重要）
+    "editor.defaultFormatter": "ms-python.black-formatter",
+
+    // タブ設定をPythonの標準的な4スペースに上書き（Prettierの4タブ/4スペースと合わせる）
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true
+  },
+
+  // 【追記】Black Formatterの引数設定
+  "python.formatting.blackArgs": ["--line-length", "88"]
+}

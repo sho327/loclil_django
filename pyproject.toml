@@ -1,0 +1,15 @@
+[tool.black]
+# Blackのルール設定
+# 行の長さの上限を88文字に設定（Blackのデフォルト値）
+line-length = 88 
+# Python 3.6以降の構文を使用
+target-version = ["py38", "py39", "py310", "py311", "py312"]
+
+[tool.isort]
+# isortのルール設定
+# Blackのルールと競合しないようにプロファイルを「black」に設定（最重要）
+profile = "black" 
+# 行の長さもBlackと合わせる
+line_length = 88
+# インポートグループの分類（標準ライブラリ、サードパーティ、ローカル）
+known_first_party = ["grasle_backend", "config", "apps.account", "apps.team"]
