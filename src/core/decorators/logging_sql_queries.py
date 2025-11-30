@@ -45,7 +45,6 @@ def logging_sql_queries(func: Callable) -> Callable:
             log_id="MSGI001",
             params=[f"=== Executed SQL in function: {func.__name__} ==="],
             logger_name=LOG_METHOD.APPLICATION.value,
-            log_level=LOG_LEVEL.INFO.value,
         )
 
         # --- クエリとパラメータのログ出力 ---
@@ -57,7 +56,6 @@ def logging_sql_queries(func: Callable) -> Callable:
                 log_id="MSGI001",
                 params=[full_sql_message],
                 logger_name=LOG_METHOD.APPLICATION.value,
-                log_level=LOG_LEVEL.INFO.value,
             )
 
         return result

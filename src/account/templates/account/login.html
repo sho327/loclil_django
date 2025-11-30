@@ -1,0 +1,138 @@
+{% extends "core/auth/base.html" %}
+{% load static %}
+
+{% block title %}ログイン - YourApp{% endblock %}
+
+{% block extra_head_css %}
+<style>
+	/* 中央配置のためのCSS */
+	.login-container {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		min-height: 100vh;
+		padding: 1rem;
+	}
+</style>
+{% endblock %}
+
+{% block extra_js_scripts %}
+<script>
+	// Alpine.js フォームデータロジック (このページでのみ必要)
+	function loginData() {
+		return {
+			// フォームデータ (Alpine.jsで状態管理)
+			email: '',
+			password: '',
+			rememberMe: false,
+			
+			// Djangoのフォーム送信処理に切り替える
+			submitLogin() {
+			// 実際には、Alpine.js でデータを集め、生のフォーム送信（@submit.preventなし）に戻すか、
+			// JavaScriptで非同期送信を行う必要があります。
+			// ここでは、Django標準のフォーム送信に戻します。
+			this.$refs.djangoForm.submit();
+			}
+		}
+	}
+</script>
+{% endblock %}
+
+
+{% block content %}
+
+{# ログインページ専用のレイアウトコンテナ #}
+<div class="login-container" x-data="loginData()">
+  
+  <div class="text-center mb-6">
+    <h1 class="text-4xl font-bold text-primary">Loclil</h1>
+    <p class="text-lg text-base-content/70 mt-2">アカウントにログイン</p>
+  </div>
+
+  <div class="card w-full max-w-sm bg-base-100 shadow-2xl p-6">
+    
+    {# Django標準のフォーム送信を利用 #}
+    <form class="card-body p-0" method="post" action="{% url 'login' %}" x-ref="djangoForm">
+      {% csrf_token %}
+      {# フォームフィールドのレンダリング #}
+      {# 重要な注意: name="username" の入力欄が email アドレスを受け取ります #}
+      {% for field in form %}
+          <div class="form-control">
+              <label class="label">
+                <span class="label-text">{{ field.label_tag }}</span>
+              </label>
+              
+              {# inputタグのレンダリングとAlpine.jsのバインディング #}
+              <input type="{{ field.field.widget.input_type }}" 
+                     name="{{ field.name }}"
+                     id="{{ field.id_for_label }}"
+                     placeholder="{{ field.label|striptags }}" 
+                     class="input input-bordered w-full {% if field.errors %}input-error{% endif %}" 
+                     x-model="{{ field.name }}" 
+                     required 
+                     value="{{ field.value|default_if_none:'' }}"/>
+
+              {% if field.errors %}
+                  <label class="label">
+                      <span class="label-text-alt text-error">
+                          {% for error in field.errors %}{{ error }}{% endfor %}
+                      </span>
+                  </label>
+              {% elif field.name == 'username' %}
+                  {# パスワード忘れリンクは 'username' (メールアドレス) の下に配置 #}
+                  <label class="label">
+                      {% comment %} <a href="{% url 'password_reset' %}" class="label-text-alt link link-hover text-sm">パスワードを忘れた場合</a> {% endcomment %}
+					  <a href="#" class="label-text-alt link link-hover text-sm">パスワードを忘れた場合</a>
+                  </label>
+              {% endif %}
+          </div>
+      {% endfor %}
+
+	  {# ログイン状態を維持するチェックボックスの処理 #}
+      {# Djangoの標準フォームでは 'rememberMe' フィールドがないため、カスタムフォームで対応が必要 #}
+      <div class="form-control mt-2">
+        <label class="label cursor-pointer p-0">
+          <span class="label-text">ログイン状態を維持する</span>
+          {# 標準フォームには 'rememberMe' フィールドが存在しないため、ここでは仮の入力欄として扱います #}
+          <input type="checkbox" 
+                 class="checkbox checkbox-primary" 
+                 name="remember_me"
+                 x-model="rememberMe"/>
+        </label>
+      </div>
+
+	  {# フォームの全体エラー表示 #}
+      {% if form.non_field_errors %}
+          <div role="alert" class="alert alert-error mb-4">
+              {% for error in form.non_field_errors %}
+                  <span>{{ error }}</span>
+              {% endfor %}
+          </div>
+      {% endif %}
+
+      <div class="form-control mt-6">
+        <button type="submit" class="btn btn-primary">ログイン</button>
+      </div>
+      
+      {# リダイレクト先を保持 #}
+      {% if next %}
+        <input type="hidden" name="next" value="{{ next }}" />
+      {% endif %}
+      
+    </form>
+  </div>
+  
+  <div class="mt-8 text-center w-full max-w-sm">
+    <p class="text-sm text-base-content/70 mb-4">
+      アカウントをお持ちでないですか？ 
+      {% comment %} <a href="{% url 'signup' %}" class="link link-primary">新規登録</a> {% endcomment %}
+	  <a href="#" class="link link-primary">新規登録</a>
+    </p>
+
+    {# テーマドロップダウンは nav.html に移動したので削除 #}
+  </div>
+
+</div>
+
+{% endblock %}

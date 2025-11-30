@@ -1,5 +1,3 @@
-from django.urls import path
-
 # from .views.account_create import AccountCreateViewSet
 # from .views.login import LoginViewSet
 
@@ -26,3 +24,14 @@ from django.urls import path
 #     path("token/", TokenObtainPairView.as_view(), name='token_obtain_pair'),
 #     path("token/refresh/", TokenRefreshView.as_view(), name='token_refresh'),
 # ]
+
+from django.urls import path
+
+from account.views.login import CustomLoginView
+
+urlpatterns = [
+    # ログイン画面を表示し、POSTで送信されたログイン情報を処理する
+    path("login/", CustomLoginView.as_view(), name="login"),
+    # ログアウト用のURLもついでに設定しておくと便利です
+    # path('logout/', LogoutView.as_view(next_page='/'), name='logout'),
+]

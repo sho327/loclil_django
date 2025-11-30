@@ -14,7 +14,7 @@
   "editor.tabSize": 4,
   "editor.insertSpaces": false,
 
-  // 【追記】ここからがPythonファイル(.py)に限定した設定です
+  // --- Pythonファイル (.py) に限定した設定 ---
   "[python]": {
     // PythonファイルのデフォルトのフォーマッターをBlackに設定（最重要）
     "editor.defaultFormatter": "ms-python.black-formatter",
@@ -25,5 +25,26 @@
   },
 
   // 【追記】Black Formatterの引数設定
-  "python.formatting.blackArgs": ["--line-length", "88"]
+  "python.formatting.blackArgs": ["--line-length", "88"],
+
+  // ------------------------------------------
+  // ⭐ 【最重要追記】Djangoテンプレートのフォーマット無効化 ⭐
+  // ------------------------------------------
+
+  // HTML/Djangoテンプレートに対するVS Code組み込みのフォーマットを無効化
+  "html.format.enable": false,
+
+  // Djangoテンプレートファイル (.html または .django-html) の設定
+  "[django-html]": {
+    // 保存時の自動フォーマットを無効化
+    "editor.formatOnSave": false,
+    // デフォルトのフォーマッターを強制的に解除
+    "editor.defaultFormatter": null,
+    // EmmetをHTMLではなくDjangoテンプレートとして有効化（利便性のため）
+    "emmet.includeLanguages": {
+      "django-html": "html"
+    }
+  }
+
+  // Prettierを使っている場合は、.prettierignore でテンプレートファイルを無視する設定も推奨されます
 }

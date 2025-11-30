@@ -216,6 +216,8 @@ class M_User(AbstractBaseUser, BaseModel, PermissionsMixin):
     )
 
     ### カスタム定義 ###
+    # 必須: カスタムマネージャーを 'objects' 属性として設定する
+    objects = M_UserManager()
     # ユーザネームフィールド
     USERNAME_FIELD = "email"
     # REQUIRED_FIELDS = ["user_id"]

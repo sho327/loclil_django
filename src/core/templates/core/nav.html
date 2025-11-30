@@ -1,0 +1,33 @@
+<header class="navbar bg-base-100 shadow-md">
+    <div class="flex-1">
+        {% comment %} <a class="btn btn-ghost text-xl" href="{% url 'home' %}">YourApp</a> {% endcomment %}
+		<a class="btn btn-ghost text-xl" href="#">YourApp</a>
+    </div>
+    <div class="flex-none">
+        <ul class="menu menu-horizontal px-1">
+            {% if user.is_authenticated %}
+                <li><a href="#">{{ user.email }}</a></li>
+                {% comment %} <li><a href="{% url 'logout' %}">ログアウト</a></li> {% endcomment %}
+				<li><a href="#">ログアウト</a></li>
+            {% else %}
+                <li><a href="{% url 'login' %}">ログイン</a></li>
+                {% comment %} <li><a href="{% url 'signup' %}">新規登録</a></li> {% endcomment %}
+				<li><a href="#">新規登録</a></li>
+            {% endif %}
+        </ul>
+        
+        {# ⭐ テーマ切り替えドロップダウン (base.htmlのthemeData()に依存) ⭐ #}
+        <div class="dropdown dropdown-bottom dropdown-end ml-4">
+            <div tabindex="0" role="button" class="btn btn-ghost btn-sm text-xs">
+              テーマ: <span x-text="activeTheme"></span>
+            </div>
+            <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 max-h-60 overflow-y-auto z-10">
+              <template x-for="t in availableThemes" :key="t">
+                <li>
+                  <a @click="$event.preventDefault(); activeTheme = t" :class="activeTheme === t ? 'active' : ''" x-text="t"></a>
+                </li>
+              </template>
+            </ul>
+        </div>
+    </div>
+</header>
