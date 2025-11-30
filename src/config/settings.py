@@ -38,6 +38,9 @@ IS_DEBUG_LOG_OUTPUT: bool = env.bool("IS_DEBUG_LOG_OUTPUT", default=False)
 # セッション/クッキー設定(HTTPS設定を想定しない場合はFalseのまま)
 SESSION_COOKIE_SECURE: bool = env.bool("SESSION_COOKIE_SECURE", default=False)
 CSRF_COOKIE_SECURE: bool = env.bool("CSRF_COOKIE_SECURE", default=False)
+# セキュリティ推奨設定
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+X_FRAME_OPTIONS = "DENY"  # クリックジャッキング対策
 TOKEN_EXPIRY_SECONDS = {
     "activation": int(os.environ.get("TOKEN_EXPIRY_ACTIVATION_SECONDS", 86400)),
     "password_reset": int(os.environ.get("TOKEN_EXPIRY_PASSWORD_RESET_SECONDS", 3600)),
@@ -81,6 +84,11 @@ MIDDLEWARE = [
     "core.middlewares.logging_middleware.LoggingMiddleware",
 ]
 ROOT_URLCONF = "config.urls"
+# 特定のシステムチェック警告を非表示にする
+# W004: USERNAME_FIELDがuniqueでないことに対する警告
+SILENCED_SYSTEM_CHECKS = [
+    "auth.W004",
+]
 
 # ==============================================================================
 # 3. TEMPLATES
@@ -178,6 +186,10 @@ EMAIL_FROM = env("EMAIL_FROM", default="noreply@example.com")
 # ==============================================================================
 # 7. LOGGING
 # ==============================================================================
+# ファイル名を読み込み時に固定
+DEBUG_SQL_LOG_FILENAME = (
+    f"{BASE_DIR}/logs/debug/{datetime.now():%Y%m%d}_sql_debug_access.log"
+)
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -225,7 +237,8 @@ LOGGING = {
         "handler_debug_db_access": {
             "level": "DEBUG",  # DEBUGレベル以下は出さない(全てのレベルを出力)
             "class": "logging.FileHandler",
-            "filename": f"{BASE_DIR}/logs/debug/{datetime.now():%Y%m%d}_sql_debug_access.log",
+            # ファイル名を読み込み時に固定
+            "filename": DEBUG_SQL_LOG_FILENAME,
             "formatter": "access",
             "encoding": "utf-8",
         },

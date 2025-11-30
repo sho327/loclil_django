@@ -1,11 +1,11 @@
 from datetime import datetime
 
 from django.middleware.csrf import get_token
-from lib import consts, modules
 from rest_framework import viewsets
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 
+from core import consts, modules
 from core.exceptions.custom_exceptions import InternalServerError
 from core.message import MessageDefinition as md
 from core.modules.format_changer import FormatChanger as fc

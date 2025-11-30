@@ -1,9 +1,7 @@
-# coding: utf-8
 from django.urls import path
-from rest_framework import routers
 
 # from .views.account_create import AccountCreateViewSet
-from .views.login import LoginViewSet
+# from .views.login import LoginViewSet
 
 # from .views.current_user_get import CurrentUserGetViewSet
 # from .views.token_obtain_pair import TokenObtainPairView
@@ -13,10 +11,10 @@ from .views.login import LoginViewSet
 # from .views.user_save import UserSaveViewSet
 # from .views.user_delete import UserDeleteViewSet
 
-router = routers.DefaultRouter()
+# router = routers.DefaultRouter()
 # router.register('create', AccountCreateViewSet, basename='account-create')
 # router.register('activate', AccountCreateViewSet, basename='account-activate')
-router.register("login", LoginViewSet, basename="login")
+# router.register("login", LoginViewSet, basename="login")
 # router.register("login", LoginViewSet, basename="login")
 # router.register("refresh_get", RefreshGetViewSet, basename="refresh-get")
 # router.register("current_user_get", CurrentUserGetViewSet, basename="current-user-get")

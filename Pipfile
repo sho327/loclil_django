@@ -5,11 +5,8 @@ name = "pypi"
 
 [packages]
 django = "*"
-djangorestframework = "*"
-djangorestframework-simplejwt = "*"
-django-cors-headers = "*"
 django-environ = "*"
-py-xid = "*"
+# py-xid = "*"
 django-simple-history = "*"
 
 [dev-packages]

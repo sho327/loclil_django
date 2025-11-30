@@ -2,13 +2,13 @@ from datetime import datetime
 
 from django.db import transaction
 from django.utils.decorators import method_decorator
-from lib import consts, modules
 from rest_framework import viewsets
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
 
 # from models import V_USER
 from account.models import M_User
+from core import consts, modules
 from core.auth_scheme.user_auth_backend import UserAuthBackend
 from core.decorators import logging_sql_queries
 from core.exceptions.custom_exceptions import InternalServerError, UnauthorizedError

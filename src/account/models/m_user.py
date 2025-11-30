@@ -9,13 +9,10 @@ from core.models import BaseModel
 
 
 class M_UserManager(BaseUserManager):
-    def create_user(self, user_id, email, password=None, **extra_fields):
-        if not user_id:
-            raise ValueError("user_id is not found.")
+    def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError("email is not found.")
         user = self.model(
-            user_id=user_id,
             email=self.normalize_email(email),
             **extra_fields,
         )
@@ -24,18 +21,15 @@ class M_UserManager(BaseUserManager):
         user.is_staff = extra_fields.pop("is_staff", False)
         user.is_active = extra_fields.pop("is_active", False)  # 初期は非アクティブ
         user.is_superuser = extra_fields.pop("is_superuser", False)
-        user.is_email_verified = extra_fields.pop("is_email_verified", False)
+        # user.is_email_verified = extra_fields.pop("is_email_verified", False)
         user.status_code = extra_fields.pop("status_code", AccountStatus.ACTIVE)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, user_id, email, password=None, **extra_fields):
-        if not user_id:
-            raise ValueError("user_id is not found.")
+    def create_superuser(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError("email is not found.")
         user = self.model(
-            user_id=user_id,
             email=self.normalize_email(email),
             **extra_fields,
         )
@@ -44,8 +38,6 @@ class M_UserManager(BaseUserManager):
         user.is_staff = True
         user.is_active = True
         user.is_superuser = True
-        # 管理者アカウントは認証済みとしてマーク
-        user.is_email_verified = True
         user.status_code = AccountStatus.ACTIVE
         user.save(using=self._db)
         return user
@@ -69,21 +61,13 @@ class M_User(AbstractBaseUser, BaseModel, PermissionsMixin):
     # Fields
     # ID (BIGINT PRIMARY KEY) はDjangoが自動で付与
 
-    # ユーザID
-    # user_id = models.CharField(
-    #     db_column="user_id",
-    #     verbose_name="ユーザID",
-    #     db_comment="ユーザーID",
-    #     max_length=150,  # Djangoの標準と同じく150文字とする
-    #     unique=False,  # 論理削除を考慮し、unique=Trueは外す
-    # )
     # メールアドレス
     email = models.EmailField(
         db_column="email",
         verbose_name="メールアドレス",
         db_comment="メールアドレス",
         max_length=254,  # RFC推奨の長さ設定
-        unique=False,  # 論理削除を考慮し、unique=Trueは外す
+        # unique=False,  # 論理削除を考慮し、unique=Trueは外す
     )
     # ステータスコード(認証に必須なためM_Userモデルに配置)
     status_code = models.IntegerField(
@@ -119,14 +103,6 @@ class M_User(AbstractBaseUser, BaseModel, PermissionsMixin):
         db_default=True,
         default=True,
     )
-    # メール認証済みフラグ
-    # is_email_verified = models.BooleanField(
-    #     db_column="is_email_verified",
-    #     verbose_name="メール認証済みフラグ",
-    #     db_comment="メール認証済みフラグ",
-    #     db_default=False,
-    #     default=False,
-    # )
     # --- 各テーブル共通(AbstractBaseModelは列順が変わってしまうので使用しない) ---
     created_by = models.DecimalField(
         db_column="created_by",
@@ -259,12 +235,7 @@ class M_User(AbstractBaseUser, BaseModel, PermissionsMixin):
                 condition=Q(is_active=True, deleted_at__isnull=True),
                 name="unique_active_email",
             ),
-            # UniqueConstraint(
-            #     fields=["user_id"],
-            #     condition=Q(is_active=True, deleted_at__isnull=True),
-            #     name="unique_active_user_id",
-            # ),
         ]
 
     def __str__(self):
-        return f"{self.email}({self.user_id})"
+        return f"{self.email}"
