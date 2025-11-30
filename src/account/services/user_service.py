@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
 from django.core.mail import send_mail
 from django.db import transaction
+from django.urls import reverse
 from django.utils import timezone
 
 from account.exceptions import (
@@ -43,12 +44,23 @@ class UserService:
         アクティベーションメールの送信処理 (Siteフレームワーク使用例)
         """
 
-        # Siteフレームワークから現在のドメインを取得
-        # SITE_ID=1 が settings.py で設定されている前提
-        # current_site = Site.objects.get_current()
-        # domain = current_site.domain
+        # 1. Siteフレームワークからドメインを取得
+        current_site = Site.objects.get_current()
+        domain = current_site.domain
+
+        # 2. Viewからスキーム（http/https）を取得し View から渡すのがベストですが、
+        #    Siteフレームワーク内で完結させるため、ここでは強制的に https とする
+        scheme = "https" if not settings.DEBUG else "http"
+
+        # 3. URLパターン名からパスを逆引き (例: /account/user/token/activation/)
+        path = reverse("account:activate", kwargs={"token_value": token_value})
+
+        # 4. 絶対URLを構築
+        activation_url = f"{scheme}://{domain}{path}"
+
+        # メール本文に利用
         subject = f"【{APP_NAME}】仮登録完了のお知らせ"
-        message = f"{APP_NAME}にご登録いただきありがとうございます。次のリンクをクリックしてアカウントを有効化してください。\n http://127.0.0.1:8000/account/user/{token_value}/activation/"
+        message = f"{APP_NAME}にご登録いただきありがとうございます。次のリンクをクリックしてアカウントを有効化してください。\n {activation_url}"
         from_email = settings.EMAIL_FROM
         recipient_list = [
             m_user_instance.email,
