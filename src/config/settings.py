@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",  # Siteフレームワークの追加
     # 外部パッケージ
     # プロジェクト固有 Apps (新しい構成)
     # "core",       # 共通機能
@@ -63,7 +64,7 @@ INSTALLED_APPS = [
     # "article",    # 記事・チュートリアル
     # "message",    # プライベートメッセージ
 ]
-
+SITE_ID = 1
 MIDDLEWARE = [
     # 独自ミドルウェア (SameSiteMiddlewareはCSRF/SessionMiddlewareより前に配置)
     "core.middlewares.same_site_middleware.SameSiteMiddleware",
@@ -79,7 +80,6 @@ MIDDLEWARE = [
     # アクセスログ設定ミドルウェア
     "core.middlewares.logging_middleware.LoggingMiddleware",
 ]
-
 ROOT_URLCONF = "config.urls"
 
 # ==============================================================================
