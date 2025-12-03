@@ -1,7 +1,7 @@
 {% extends "core/auth/base.html" %}
 {% load static %}
 
-{% block title %}アカウント有効化完了 - Loclil{% endblock %}
+{% block title %}アカウント有効化完了 - {{ SITE_NAME }}{% endblock %}
 
 {% block extra_head_css %}
 <style>
@@ -26,7 +26,7 @@
 <div class="login-container">
   
   <div class="text-center mb-6">
-    <h1 class="text-4xl font-bold text-primary">Loclil</h1>
+    <h1 class="text-4xl font-bold text-primary">{{ SITE_NAME }}</h1>
     <p class="text-lg text-base-content/70 mt-2">アカウントの有効化が完了しました</p>
   </div>
 

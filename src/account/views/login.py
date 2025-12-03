@@ -1,22 +1,23 @@
 # LoginView ではなく FormView をインポート
 from django.conf import settings
 from django.contrib.auth import login
-from django.forms import Form
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic.edit import FormView
 
 from account.exceptions import AccountLockedException, AuthenticationFailedException
-from account.forms.login import CustomAuthenticationForm
+from account.forms.login import AuthenticationForm
 
 # AuthServiceとカスタム例外をインポート
 from account.services.auth_service import AuthService
 from core.decorators.logging_sql_queries import logging_sql_queries
 
+process_name = "LoginView"
 
-class CustomLoginView(FormView):
-    form_class = CustomAuthenticationForm
+
+class LoginView(FormView):
+    form_class = AuthenticationForm
     template_name = "account/login.html"
     success_url = reverse_lazy("dashboard")
 
@@ -26,8 +27,8 @@ class CustomLoginView(FormView):
         return self.success_url
 
     # 認証成功時に呼び出されるメソッドをオーバーライド
-    @logging_sql_queries(process_name="login")
-    def form_valid(self, form: CustomAuthenticationForm) -> HttpResponseRedirect:
+    @logging_sql_queries(process_name=process_name)
+    def form_valid(self, form: AuthenticationForm) -> HttpResponseRedirect:
         """
         フォームのバリデーションが成功した後、AuthServiceを使用して認証を試みる。
         """

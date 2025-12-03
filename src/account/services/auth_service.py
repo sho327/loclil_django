@@ -10,6 +10,7 @@ from django.contrib.auth import get_user_model
 # セッション管理のためにSessionモデルをインポート（強制ログアウト用）
 from django.contrib.sessions.models import Session
 from django.core.mail import send_mail
+from django.db import IntegrityError as DjangoIntegrityError
 from django.db import transaction
 from django.utils import timezone
 
@@ -22,10 +23,12 @@ from account.exceptions import (
 
 # account/必要なモデルとリポジトリをインポート
 from account.models.t_user_token import TokenTypes
+from account.repositories.m_user_profile_repository import M_UserProfileRepository
 from account.repositories.m_user_repository import M_UserRepository
 from account.repositories.t_user_token_repository import T_UserTokenRepository
 from core.auth_scheme.user_auth_backend import UserAuthBackend
 from core.consts import APP_NAME
+from core.exceptions import ExternalServiceError, IntegrityError  # コア例外をインポート
 
 # from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -42,6 +45,7 @@ class AuthService:
     def __init__(self):
         self.user_auth_backend = UserAuthBackend()
         self.user_repo = M_UserRepository()
+        self.profile_repo = M_UserProfileRepository()
         self.token_repo = T_UserTokenRepository()
 
     # ------------------------------------------------------------------
@@ -49,16 +53,26 @@ class AuthService:
     # ------------------------------------------------------------------
     def _send_password_reset_email(self, user: User, token: str):
         """パスワードリセットメール送信の実装"""
-        reset_url = f"http://127.0.0.1:8000/account/password-reset/{token}/confirm/"
+        m_user_profile_instance = self.profile_repo.get_alive_one_or_none(
+            m_user=user.pk
+        )
+        reset_url = f"http://localhost:8000/account/password_reset_confirm/{token}/"
         subject = f"【{APP_NAME}】パスワード再設定のご案内"
         message = (
-            f"{user.display_name} 様\n\n"
+            f"{m_user_profile_instance.display_name} 様\n\n"
             f"パスワード再設定のリクエストを受け付けました。\n"
             f"以下のリンクから新しいパスワードを設定してください（有効期限：1時間）。\n\n"
             f"{reset_url}\n\n"
             f"お心当たりがない場合は、このメールを破棄してください。"
         )
-        send_mail(subject, message, settings.EMAIL_FROM, [user.email])
+        try:
+            send_mail(subject, message, settings.EMAIL_FROM, [user.email])
+        except Exception as e:
+            # send_mailはSMTP接続失敗など、様々なエラーを投げる可能性がある
+            raise ExternalServiceError(
+                message="パスワードリセットメールの送信に失敗しました。",
+                details={"recipient": user.email, "internal_error": str(e)},
+            )
 
     def _force_logout_all_sessions(self, user: User):
         """
@@ -130,32 +144,52 @@ class AuthService:
         if not user or not user.is_active:
             return True
 
-        # 2. リセットトークンの生成 (アクティベーションと同様のロジック)
-        raw_token = os.urandom(32).hex()
-        token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
-        expiry_seconds = settings.TOKEN_EXPIRY_SECONDS.get("password_reset")
-        expires_at = timezone.now() + timezone.timedelta(hours=expiry_seconds)
+        try:
+            # 2. リセットトークンの生成 (アクティベーションと同様のロジック)
+            raw_token = os.urandom(32).hex()
+            token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+            expiry_seconds = settings.TOKEN_EXPIRY_SECONDS.get("password_reset")
+            expired_at = timezone.now() + timezone.timedelta(hours=expiry_seconds)
 
-        # 3. 既存のリセットトークンがあれば無効化する（オプション）
-        # 【セキュリティ/利便性のトレードオフ】
-        # 既存のトークンを無効化することで、ユーザーが誤って何度もリクエストした際に
-        # どのメール（どのトークン）が有効か迷うのを防げる。
-        # ただし、悪意のあるユーザーが連続リクエストで正規ユーザーの有効トークンを無効化する
-        # Denial of Service (DoS) 攻撃の可能性もある。今回はコメントアウト。
-        # # self.token_repo.invalidate_tokens_by_user(user, TokenTypes.PASSWORD_RESET)
+            # 3. 既存のリセットトークンがあれば無効化する（オプション）
+            # 【セキュリティ/利便性のトレードオフ】
+            # 既存のトークンを無効化することで、ユーザーが誤って何度もリクエストした際に
+            # どのメール（どのトークン）が有効か迷うのを防げる。
+            # ただし、悪意のあるユーザーが連続リクエストで正規ユーザーの有効トークンを無効化する
+            # Denial of Service (DoS) 攻撃の可能性もある。今回はコメントアウト。
+            # # self.token_repo.invalidate_tokens_by_user(user, TokenTypes.PASSWORD_RESET)
 
-        # 4. トークン保存
-        self.token_repo.create(
-            m_user=user,
-            token_hash=token_hash,
-            type=TokenTypes.PASSWORD_RESET,
-            expires_at=expires_at,
-        )
+            # 4. トークン保存
+            self.token_repo.create(
+                m_user=user,
+                token_hash=token_hash,
+                token_type=TokenTypes.PASSWORD_RESET,
+                expired_at=expired_at,
+            )
 
-        # 5. メール送信
-        self._send_password_reset_email(user, raw_token)
+            # 5. メール送信
+            self._send_password_reset_email(user, raw_token)
 
-        return True
+            return True
+
+        except DjangoIntegrityError as e:
+            # トークン保存時に発生しうるDBレベルのエラー（例: 外部キー制約）
+            # DuplicationErrorはトークンでは考えにくいが、IntegrityErrorとして捕捉
+            # ログ記録推奨
+            raise IntegrityError(
+                message="リセットトークン生成中にデータベース整合性エラーが発生しました。",
+                details={"internal_message": str(e)},
+            )
+        except ExternalServiceError:
+            # メール送信失敗の例外をそのまま View へ再送出
+            raise
+        except Exception as e:
+            # その他の予期せぬエラー（DB接続エラーなど）
+            # ログ記録推奨
+            raise IntegrityError(
+                message="リセット要求処理中に予期せぬエラーが発生しました。",
+                details={"internal_message": str(e)},
+            )
 
     # ------------------------------------------------------------------
     # パスワードリセット実行
@@ -171,8 +205,8 @@ class AuthService:
         # 1. トークン検証
         token_instance = self.token_repo.get_alive_one_or_none(
             token_hash=token_hash,
-            type=TokenTypes.PASSWORD_RESET,
-            expires_at__gt=now,
+            token_type=TokenTypes.PASSWORD_RESET,
+            expired_at__gt=now,
         )
 
         if not token_instance:
@@ -180,22 +214,38 @@ class AuthService:
 
         user = token_instance.m_user
 
-        # 2. パスワード更新 (ハッシュ化はset_passwordが担う)
-        user.set_password(new_password)
+        try:
+            # 2. パスワード更新 (ハッシュ化はset_passwordが担う)
+            user.set_password(new_password)
 
-        # 3. 情報更新 (パスワード更新日時など)
-        self.user_repo.update(
-            user,
-            password=user.password,  # set_passwordでハッシュ化された値が入っている
-            password_updated_at=now,
-        )
+            # 3. 情報更新 (パスワード更新日時など)
+            self.user_repo.update(
+                user,
+                password=user.password,  # set_passwordでハッシュ化された値が入っている
+                password_updated_at=now,
+            )
 
-        # 4. 使用済みトークンを無効化
-        self.token_repo.soft_delete(token_instance)
+            # 4. 使用済みトークンを無効化
+            self.token_repo.soft_delete(token_instance)
 
-        # 5. 【セキュリティ強化：全デバイスからの強制ログアウト（セッション切断）】
-        # セッション認証に基づき、全セッションを削除する
-        # SessionモデルにはUserへの直接的なリレーションがないため、セッションデータを解析して削除
-        self._force_logout_all_sessions(user)
+            # 5. 【セキュリティ強化：全デバイスからの強制ログアウト（セッション切断）】
+            # セッション認証に基づき、全セッションを削除する
+            # SessionモデルにはUserへの直接的なリレーションがないため、セッションデータを解析して削除
+            self._force_logout_all_sessions(user)
 
-        return user
+            return user
+
+        except DjangoIntegrityError as e:
+            # パスワード更新時のDBレベルのエラー（外部キーなど）
+            # ログ記録推奨
+            raise IntegrityError(
+                message="パスワード更新中にデータベース整合性エラーが発生しました。",
+                details={"internal_message": str(e)},
+            )
+        except Exception as e:
+            # その他の予期せぬエラー（DB接続エラーなど）
+            # ログ記録推奨
+            raise IntegrityError(
+                message="パスワードリセット処理中に予期せぬエラーが発生しました。",
+                details={"internal_message": str(e)},
+            )

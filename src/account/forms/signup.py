@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
-class CustomSignupForm(forms.Form):
+class SignupForm(forms.Form):
     # Djangoの標準Userモデルのフィールドを使用
     email = forms.EmailField(
         label="メールアドレス",

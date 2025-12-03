@@ -58,7 +58,7 @@ class UserService:
         scheme = "https" if not settings.DEBUG else "http"
 
         # 3. URLパターン名からパスを逆引き (例: /account/user/token/activation/)
-        path = reverse("account:activate", kwargs={"token_value": token_value})
+        path = reverse("account:activate_user", kwargs={"token_value": token_value})
 
         # 4. 絶対URLを構築
         activation_url = f"{scheme}://{domain}{path}"
@@ -98,8 +98,8 @@ class UserService:
             if display_name:
                 # M_UserProfileのリポジトリを使用して更新
                 # M_UserとM_UserProfileは1:1のため、M_UserインスタンスからM_UserProfileを取得し更新
-                m_user_profile_instance = self.profile_repo.get_by_user_id(
-                    m_user_instance.pk
+                m_user_profile_instance = self.profile_repo.get_alive_one_or_none(
+                    m_user=m_user_instance.pk
                 )
                 if m_user_profile_instance:
                     # profile_repoのupdateメソッドを使用

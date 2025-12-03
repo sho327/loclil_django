@@ -79,10 +79,6 @@ class M_UserProfileRepository(BaseRepository):
     # ------------------------------------------------------------------
     # モデルに対する固有のデータ取得処理
     # ------------------------------------------------------------------
-    def get_by_user_id(self, user_id: int) -> M_UserProfile | None:
-        """ユーザーIDに紐づく、生存しているプロフィールを取得する"""
-        return self.get_alive_one_or_none(m_user=user_id)
-
     def search_by_display_name(self, keyword: str) -> M_UserProfileQuerySet:
         """表示名（display_name）の部分一致でプロフィールを検索する"""
         return self._get_alive_queryset().filter(display_name__icontains=keyword)

@@ -1,7 +1,7 @@
 {% extends "core/auth/base.html" %}
 {% load static %}
 
-{% block title %}新規登録 - YourApp{% endblock %}
+{% block title %}新規登録 - {{ SITE_NAME }}{% endblock %}
 
 {% block extra_head_css %}
 <style>
@@ -20,9 +20,9 @@
 {% block extra_js_scripts %}
 <script>
     // Alpine.js フォームデータロジック
-    function signupData() {
+    function registerData() {
         return {
-          // ⭐ フォームデータ: 初期値をDjangoから受け取れるようにする ⭐
+          // フォームデータ: 初期値をDjangoから受け取れるようにする
           // ただし、Djangoのフォームレンダリングに任せるため、x-modelは残すが、submitロジックを簡素化
           email: '{{ form.email.value|default_if_none:"" }}',
           displayName: '{{ form.display_name.value|default_if_none:"" }}', 
@@ -43,16 +43,16 @@
 {% block content %}
 
 {# 新規登録ページ専用のレイアウトコンテナ #}
-<div class="login-container" x-data="signupData()">
+<div class="login-container" x-data="registerData()">
     <div class="text-center mb-6">
-      <h1 class="text-4xl font-bold text-primary">Loclil</h1>
+      <h1 class="text-4xl font-bold text-primary">{{ SITE_NAME }}</h1>
       <p class="text-lg text-base-content/70 mt-2">新しいアカウントを作成</p>
     </div>
   
     <div class="card w-full max-w-sm bg-base-100 shadow-2xl p-6">
       
-      {# ⭐ フォームタグをログイン形式に統一 ⭐ #}
-      <form class="card-body p-0" method="post" action="{% url 'account:signup' %}" x-ref="djangoForm">
+      {# フォームタグをログイン形式に統一 #}
+      <form class="card-body p-0" method="post" action="{% url 'account:register' %}" x-ref="djangoForm">
         {% csrf_token %}
 
         {# フォームの全体エラー表示 #}
@@ -70,7 +70,7 @@
             </div>
         {% endif %}
         
-        {# ⭐ 1. メールアドレス フィールド ⭐ #}
+        {# 1. メールアドレス フィールド #}
         {% with field=form.email %}
           <div class="form-control">
             <label class="label">
@@ -94,7 +94,7 @@
           </div>
         {% endwith %}
 
-        {# ⭐ 2. 表示名 フィールド ⭐ #}
+        {# 2. 表示名 フィールド #}
         {% with field=form.display_name %}
           <div class="form-control">
             <label class="label">
@@ -117,7 +117,7 @@
           </div>
         {% endwith %}
 
-        {# ⭐ 3. パスワード フィールド ⭐ #}
+        {# 3. パスワード フィールド #}
         {% with field=form.password %}
           <div class="form-control">
             <label class="label">
@@ -141,7 +141,7 @@
           </div>
         {% endwith %}
   
-        {# ⭐ 4. パスワード (確認) フィールド ⭐ #}
+        {# 4. パスワード (確認) フィールド #}
         {% with field=form.password_confirm %}
           <div class="form-control">
             <label class="label">

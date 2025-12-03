@@ -1,8 +1,8 @@
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm as DjangoAuthenticationForm
 
 
-class CustomAuthenticationForm(AuthenticationForm):
+class AuthenticationForm(DjangoAuthenticationForm):
     """
     ログイン状態を記憶するチェックボックスを追加した認証フォーム
     """
@@ -32,7 +32,7 @@ class CustomAuthenticationForm(AuthenticationForm):
     # 標準フォームのフィールド（username, password）は継承されるが、
     # DoS対策で最大文字数は弾けるようにする
 
-    # ⭐ 必須: 標準の認証ロジックを含む clean() メソッドを無効化する ⭐
+    # 標準の認証ロジックを含む clean() メソッドを無効化する
     def clean(self):
         # 親クラスの clean() を呼び出しません。
         # 必要なフィールドのデータ（username, password）は self.cleaned_data に格納済みです。

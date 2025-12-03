@@ -1,7 +1,7 @@
 {% extends "core/auth/base.html" %}
 {% load static %}
 
-{% block title %}有効化エラー - Loclil{% endblock %}
+{% block title %}有効化エラー - {{ SITE_NAME }}{% endblock %}
 
 {% block extra_head_css %}
 <style>
@@ -26,7 +26,7 @@
 <div class="login-container">
   
   <div class="text-center mb-6">
-    <h1 class="text-4xl font-bold text-primary">Loclil</h1>
+    <h1 class="text-4xl font-bold text-primary">{{ SITE_NAME }}</h1>
     <p class="text-lg text-base-content/70 mt-2">アカウント有効化エラー</p>
   </div>
 
@@ -52,7 +52,7 @@
     <p class="text-xs text-base-content/60 mb-5">
       再試行をご希望の場合は、もう一度サインアップをお試しください。
     </p>
-    <a href="{% url 'account:signup' %}" class="btn btn-warning btn-sm mt-2">新規登録画面へ戻る</a>
+    <a href="{% url 'account:register' %}" class="btn btn-warning btn-sm mt-2">新規登録画面へ戻る</a>
     {% else %}
     {# システムエラーなど、再試行の意味がない場合はログインへ誘導 #}
     <a href="{% url 'account:login' %}" class="btn btn-primary btn-sm mt-2">ログイン画面へ戻る</a>

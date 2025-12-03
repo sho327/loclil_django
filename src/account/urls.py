@@ -1,46 +1,41 @@
-# from .views.account_create import AccountCreateViewSet
-# from .views.login import LoginViewSet
-
-# from .views.current_user_get import CurrentUserGetViewSet
-# from .views.token_obtain_pair import TokenObtainPairView
-# from .views.refresh_get import RefreshGetViewSet
-# from .views.token_refresh import TokenRefreshView
-# from .views.user_get import UserGetViewSet
-# from .views.user_save import UserSaveViewSet
-# from .views.user_delete import UserDeleteViewSet
-
-# router = routers.DefaultRouter()
-# router.register('create', AccountCreateViewSet, basename='account-create')
-# router.register('activate', AccountCreateViewSet, basename='account-activate')
-# router.register("login", LoginViewSet, basename="login")
-# router.register("login", LoginViewSet, basename="login")
-# router.register("refresh_get", RefreshGetViewSet, basename="refresh-get")
-# router.register("current_user_get", CurrentUserGetViewSet, basename="current-user-get")
-# router.register('user/get', UserGetViewSet, basename='user-get')
-# router.register('user/list', UserListViewSet, basename='user-list')
-# router.register('user/save', UserSaveViewSet, basename='user-save')
-# router.register('user/delete', UserDeleteViewSet, basename='user-delete')
-# urlpatterns = [
-#     path("token/", TokenObtainPairView.as_view(), name='token_obtain_pair'),
-#     path("token/refresh/", TokenRefreshView.as_view(), name='token_refresh'),
-# ]
-
 from django.urls import path
 
-from account.views.activate import UserActivationView
-from account.views.activate_pending import ActivatePendingView
-from account.views.login import CustomLoginView
-from account.views.signup import CustomSignupView
+from account.views.activate_user import ActivateUserView
+from account.views.login import LoginView
+from account.views.logout import LogoutView
+from account.views.password_reset_confirm import PasswordResetConfirmView
+from account.views.password_reset_pending import PasswordResetPendingView
+from account.views.password_reset_request import PasswordResetRequestView
+from account.views.register import RegisterView
+from account.views.register_pending import RegisterPendingView
 
-app_name = "account"  # app_nameを設定すると reverse_lazy("account:registration_pending") が動作します
+# app_nameを設定すると reverse_lazy("account:register_pending") が動作します
+app_name = "account"
 
 urlpatterns = [
     # ログイン画面を表示し、POSTで送信されたログイン情報を処理する
-    path("login/", CustomLoginView.as_view(), name="login"),
-    path("signup/", CustomSignupView.as_view(), name="signup"),
-    path("activate_pending/", ActivatePendingView.as_view(), name="activate_pending"),
-    path("activate_pending/", ActivatePendingView.as_view(), name="activate_pending"),
-    path("activate/<str:token_value>/", UserActivationView.as_view(), name="activate"),
-    # ログアウト用のURLもついでに設定しておくと便利です
-    # path('logout/', LogoutView.as_view(next_page='/'), name='logout'),
+    path(
+        "activate_user/<str:token_value>/",
+        ActivateUserView.as_view(),
+        name="activate_user",
+    ),
+    path("login/", LoginView.as_view(), name="login"),
+    path("logout/", LogoutView.as_view(), name="logout"),
+    path("register/", RegisterView.as_view(), name="register"),
+    path("register_pending/", RegisterPendingView.as_view(), name="register_pending"),
+    path(
+        "password_reset_request/",
+        PasswordResetRequestView.as_view(),
+        name="password_reset_request",
+    ),
+    path(
+        "password_reset_pending",
+        PasswordResetPendingView.as_view(),
+        name="password_reset_pending",
+    ),
+    path(
+        "password_reset_confirm/<str:token_value>/",
+        PasswordResetConfirmView.as_view(),
+        name="password_reset_confirm",
+    ),
 ]

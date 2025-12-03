@@ -1,7 +1,7 @@
 {% extends "core/auth/base.html" %}
 {% load static %}
 
-{% block title %}ログイン - Loclil{% endblock %}
+{% block title %}ログイン - {{ SITE_NAME }}{% endblock %}
 
 {% block extra_head_css %}
 <style>
@@ -43,7 +43,7 @@
 <div class="login-container" x-data="loginData()">
   
   <div class="text-center mb-6">
-    <h1 class="text-4xl font-bold text-primary">Loclil</h1>
+    <h1 class="text-4xl font-bold text-primary">{{ SITE_NAME }}</h1>
     <p class="text-lg text-base-content/70 mt-2">アカウントにログイン</p>
   </div>
 
@@ -147,7 +147,7 @@
 	  </label> {% endcomment %}
 	  
 	  <div class="mt-2">
-	  	<a href="#" class="label-text-alt link link-primary text-sm">パスワードを忘れた場合</a>
+	  	<a href="{% url 'account:password_reset_request' %}" class="label-text-alt link link-primary text-sm">パスワードを忘れた場合</a>
 	  </div>
       
     </form>
@@ -156,7 +156,7 @@
   <div class="mt-8 text-center w-full max-w-sm">
     <p class="text-sm text-base-content/70 mb-4">
       アカウントをお持ちでないですか？ 
-      <a href="{% url 'account:signup' %}" class="link link-primary">新規登録</a>
+      <a href="{% url 'account:register' %}" class="link link-primary">新規登録</a>
     </p>
   </div>
 

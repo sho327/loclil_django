@@ -15,7 +15,7 @@
 	</div>
 	
 	<div class="flex-1">
-	  <a class="font-bold text-xl normal-case">Loclil | ダッシュボード</a>
+	  <a class="font-bold text-xl normal-case">{{ SITE_NAME }} | ダッシュボード</a>
 	</div>
   
 	<div class="flex-none gap-2">
@@ -32,7 +32,7 @@
 		  <li><a>設定</a></li>
 		  
 		  <li class="divider"></li>
-		  <li tabindex="0">
+		  {% comment %} <li tabindex="0">
 			<details>
 			  <summary class="font-semibold">テーマ: <span x-text="activeTheme"></span></summary>
 			  <ul class="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-52 max-h-60 overflow-y-auto">
@@ -43,9 +43,9 @@
 				</template>
 			  </ul>
 			</details>
-		  </li>
+		  </li> {% endcomment %}
 		  
-		  <li><a>ログアウト</a></li>
+		  <li><a href="{% url 'account:logout' %}">ログアウト</a></li>
 		</ul>
 	  </div>
 	</div>

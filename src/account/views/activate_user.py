@@ -10,7 +10,7 @@ from account.exceptions import (
 from account.services.user_service import UserService
 
 
-class UserActivationView(View):
+class ActivateUserView(View):
     """
     メールに記載されたトークンを使ってユーザーアカウントを有効化する。
     """
@@ -22,7 +22,7 @@ class UserActivationView(View):
             # サービス層でアカウントを有効化
             user = user_service.activate_user(raw_token_value=token_value)
 
-            # ⭐ 成功: ユーザーを強制的にログインさせる (UX向上のためオプション) ⭐
+            # 成功: ユーザーを強制的にログインさせる (UX向上のためオプション)
             login(self.request, user)
 
             # 成功画面へリダイレクト
@@ -36,7 +36,7 @@ class UserActivationView(View):
                 "can_retry": True,
             }
             return render(
-                request, "account/activation_failed.html", context, status=400
+                request, "account/activate_user_failed.html", context, status=400
             )
 
         except UserAlreadyActiveException:
@@ -47,7 +47,7 @@ class UserActivationView(View):
             }
             # 既にログイン済みの可能性もあるため、200 OK でメッセージを返す
             return render(
-                request, "account/activation_success.html", context, status=200
+                request, "account/activate_user_success.html", context, status=200
             )
 
         except Exception:
@@ -58,5 +58,5 @@ class UserActivationView(View):
                 "can_retry": False,
             }
             return render(
-                request, "account/activation_failed.html", context, status=500
+                request, "account/activate_user_failed.html", context, status=500
             )

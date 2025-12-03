@@ -5,21 +5,23 @@ from django.urls import reverse_lazy
 from django.views.generic.edit import FormView
 
 # サインアップフォームをインポート
-from account.forms.signup import CustomSignupForm
+from account.forms.signup import SignupForm
 
 # AuthServiceとカスタム例外をインポート
 from account.services.user_service import UserService
 from core.decorators.logging_sql_queries import logging_sql_queries
 
+process_name = "RegisterView"
 
-class CustomSignupView(FormView):
-    form_class = CustomSignupForm
-    template_name = "account/signup.html"
-    success_url = reverse_lazy("account:activate_pending")
+
+class RegisterView(FormView):
+    form_class = SignupForm
+    template_name = "account/register.html"
+    success_url = reverse_lazy("account:register_pending")
 
     # SQLログデコレータを適用
-    @logging_sql_queries(process_name="signup")
-    def form_valid(self, form: CustomSignupForm) -> HttpResponseRedirect:
+    @logging_sql_queries(process_name=process_name)
+    def form_valid(self, form: SignupForm) -> HttpResponseRedirect:
 
         email = form.cleaned_data["email"]
         password = form.cleaned_data["password"]
@@ -29,14 +31,11 @@ class CustomSignupView(FormView):
 
         try:
             # 1. サービスを介してユーザーを作成・保存
-            user = user_service.register_new_user(
+            user_service.register_new_user(
                 email=email, password=password, display_name=display_name
             )
 
-            # 2. 登録成功後、そのままログインさせる (ユーザー体験向上のため)
-            # login(self.request, user)
-
-            # 3. 成功後のリダイレクト
+            # 2. 成功後のリダイレクト
             return redirect(self.get_success_url())
 
         except Exception as e:

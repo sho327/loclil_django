@@ -37,7 +37,7 @@ IS_DEBUG_LOG_OUTPUT: bool = env.bool("IS_DEBUG_LOG_OUTPUT", default=False)
 
 # セッション/クッキー設定(HTTPS設定を想定しない場合はFalseのまま)
 SESSION_COOKIE_SECURE: bool = env.bool("SESSION_COOKIE_SECURE", default=False)
-SESSION_COOKIE_AGE: int = 60
+SESSION_COOKIE_AGE: int = 3660
 CSRF_COOKIE_SECURE: bool = env.bool("CSRF_COOKIE_SECURE", default=False)
 # セキュリティ推奨設定
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -47,6 +47,7 @@ TOKEN_EXPIRY_SECONDS = {
     "password_reset": int(os.environ.get("TOKEN_EXPIRY_PASSWORD_RESET_SECONDS", 3600)),
     # ... 他のトークン種別も追加 ...
 }
+MIN_PASSWORD_LENGTH: int = 8
 
 # ==============================================================================
 # 2. APPLICATION DEFINITION
@@ -111,7 +112,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 # 共通データのためのカスタムコンテキストプロセッサがあれば追記
-                # 'core.context_processors.global_data',
+                "core.context_processors.global_data.global_settings",
             ],
         },
     },
@@ -171,6 +172,9 @@ STATIC_ROOT = BASE_DIR / "staticfiles"  # デプロイ時に必要
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Djangoのデフォルト設定（明示的に書いていない場合もこの値が使われる）
+LOGIN_URL = "/account/login/"
 
 # ==============================================================================
 # 6. CLOUDINARY & EMAIL
