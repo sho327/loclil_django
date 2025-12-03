@@ -28,14 +28,18 @@ class PasswordResetRequestView(FormView):
             auth_service.request_password_reset(email)
 
             # 成功メッセージを設定（ユーザーがメールをチェックすべきことを通知）
-            messages.info(self.request, "パスワード再設定用のメールを送信しました。")
+            # messages.info(self.request, "パスワード再設定用のメールを送信しました。")
 
             return super().form_valid(form)
 
         except IntegrityError:
             # DB関連のシステムエラー
-            messages.error(
-                self.request,
+            # messages.error(
+            #     self.request,
+            #     "システムエラーが発生しました。時間をおいて再度お試しください。",
+            # )
+            form.add_error(
+                None,
                 "システムエラーが発生しました。時間をおいて再度お試しください。",
             )
             return redirect(
@@ -44,13 +48,21 @@ class PasswordResetRequestView(FormView):
 
         except ExternalServiceError:
             # メール送信に失敗した場合のエラー
-            messages.error(
-                self.request,
+            # messages.error(
+            #     self.request,
+            #     "メール送信サービスに問題が発生しました。時間をおいて再度お試しください。",
+            # )
+            form.add_error(
+                None,
                 "メール送信サービスに問題が発生しました。時間をおいて再度お試しください。",
             )
             return redirect(reverse("account:login"))
 
         except Exception:
             # 予期せぬ全てのエラー
-            messages.error(self.request, "予期せぬエラーが発生しました。")
+            # messages.error(self.request, "予期せぬエラーが発生しました。")
+            form.add_error(
+                None,
+                "予期せぬエラーが発生しました。",
+            )
             return redirect(reverse("account:login"))

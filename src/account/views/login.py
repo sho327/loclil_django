@@ -70,15 +70,13 @@ class LoginView(FormView):
             return self.form_invalid(form)  # フォーム再表示
 
         except IntegrityError:
-            # DB側のエラー。システムエラーとして処理
-            messages.error(
-                self.request,
+            form.add_error(
+                None,
                 "システムエラーが発生しました。時間をおいて再度お試しください。",
             )
             return self.form_invalid(form)  # フォーム再表示
 
         except Exception:
-            # 予期せぬエラーの最終捕捉
-            messages.error(self.request, "予期せぬエラーが発生しました。")
             # ログ記録推奨
-            return self.form_invalid(form)
+            form.add_error(None, "予期せぬエラーが発生しました。")
+            return self.form_invalid(form)  # フォーム再表示

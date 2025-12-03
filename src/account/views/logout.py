@@ -20,12 +20,13 @@ class LogoutView(View):
         try:
             # Django標準のログアウト関数を呼び出す
             logout(request)
-            messages.success(request, "ログアウトしました。")
+            # messages.success(request, "ログアウトしました。")
 
         except Exception:
             # ログアウト処理中のシステムエラー（セッション削除失敗など）
-            messages.error(request, "ログアウト処理中にエラーが発生しました。")
+            # messages.error(request, "ログアウト処理中にエラーが発生しました。")
             # ログ記録推奨
+            pass
 
         return redirect(reverse("account:login"))
 

@@ -38,16 +38,20 @@ class PasswordResetConfirmView(FormView):
             auth_service.reset_password(self.token_value, new_password)
 
             # 成功メッセージを設定し、ログイン画面へリダイレクト
-            messages.success(
-                self.request,
-                "パスワードが正常にリセットされました。新しいパスワードでログインしてください。",
-            )
+            # messages.success(
+            #     self.request,
+            #     "パスワードが正常にリセットされました。新しいパスワードでログインしてください。",
+            # )
             return super().form_valid(form)
 
         except PasswordResetTokenInvalidException:
             # トークンが無効または期限切れの場合
-            messages.error(
-                self.request,
+            # messages.error(
+            #     self.request,
+            #     "このリセットリンクは無効か、または期限が切れています。お手数ですが、再度パスワードリセットを要求してください。",
+            # )
+            form.add_error(
+                None,
                 "このリセットリンクは無効か、または期限が切れています。お手数ですが、再度パスワードリセットを要求してください。",
             )
 
@@ -55,18 +59,26 @@ class PasswordResetConfirmView(FormView):
             return redirect(reverse("account:password_reset_request"))
 
         except IntegrityError:  # ⭐ 追加で捕捉 ⭐
-            messages.error(
-                self.request,
+            # messages.error(
+            #     self.request,
+            #     "システム処理中にエラーが発生しました。時間をおいて再度お試しください。",
+            # )
+            form.add_error(
+                None,
                 "システム処理中にエラーが発生しました。時間をおいて再度お試しください。",
             )
             return redirect(reverse("account:login"))  # またはエラー画面へリダイレクト
 
         except Exception as e:
             # 予期せぬエラー (DBエラーなど)
-            messages.error(
-                self.request,
-                "パスワードリセット中にシステムエラーが発生しました。時間をおいて再度お試しください。",
-            )
+            # messages.error(
+            #     self.request,
+            #     "パスワードリセット中にシステムエラーが発生しました。時間をおいて再度お試しください。",
+            # )
             # ログ記録推奨
+            form.add_error(
+                None,
+                "パスワードリセット中に予期せぬエラーが発生しました。時間をおいて再度お試しください。",
+            )
             # log_output_by_msg_id(...)
             return redirect(reverse("account:login"))  # 安全のためログイン画面に戻す

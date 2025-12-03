@@ -40,5 +40,9 @@ class RegisterView(FormView):
 
         except Exception as e:
             # サービス層で発生した予期せぬエラーをキャッチし、フォームエラーとして表示
-            form.add_error(None, str(e))
+            # form.add_error(None, str(e))
+            form.add_error(
+                None,
+                "予期せぬエラーが発生しました。",
+            )
             return self.form_invalid(form)
