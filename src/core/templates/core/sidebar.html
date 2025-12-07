@@ -107,16 +107,16 @@
           </a>
         </li>
         <li>
-          <a href="#"
+          <a href="{% url 'account:user_search' %}"
              class="flex items-center gap-2"
              :class="{
-                 'active': activePath === '#' && activeTheme === 'business',
-                 'bg-primary/10 text-primary font-bold hover:bg-primary/20 focus:!bg-primary/10 active:!bg-primary/10 focus-visible:!bg-primary/10 focus:!text-primary active:!text-primary': activePath === '#' && activeTheme !== 'business',
-                 'text-base-content hover:bg-primary/10 focus:!bg-primary/10 active:!bg-primary/10 focus-visible:!bg-primary/10 focus:!text-primary active:!text-primary': activePath !== '#' && activeTheme !== 'business',
+                 'active': activePath === 'user_search' && activeTheme === 'business',
+                 'bg-primary/10 text-primary font-bold hover:bg-primary/20 focus:!bg-primary/10 active:!bg-primary/10 focus-visible:!bg-primary/10 focus:!text-primary active:!text-primary': activePath === 'user_search' && activeTheme !== 'business',
+                 'text-base-content hover:bg-primary/10 focus:!bg-primary/10 active:!bg-primary/10 focus-visible:!bg-primary/10 focus:!text-primary active:!text-primary': activePath !== 'user_search' && activeTheme !== 'business',
                  'justify-center p-0': !sidebarOpen, 
                  'py-3 px-4': sidebarOpen 
              }"
-             @click="activePath = '#'">
+             @click="activePath = 'user_search'">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3"/>
             </svg>

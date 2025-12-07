@@ -9,8 +9,10 @@ from account.views.password_reset_pending import PasswordResetPendingView
 from account.views.password_reset_request import PasswordResetRequestView
 from account.views.profile import ProfileView
 from account.views.profile_edit import ProfileEditView
+from account.views.public_profile import PublicProfileView
 from account.views.register import RegisterView
 from account.views.register_pending import RegisterPendingView
+from account.views.user_search import UserSearchView
 
 # app_nameを設定すると reverse_lazy("account:register_pending") が動作します
 app_name = "account"
@@ -48,4 +50,6 @@ urlpatterns = [
     ),
     path("profile/", ProfileView.as_view(), name="profile"),
     path("profile/edit/", ProfileEditView.as_view(), name="profile_edit"),
+    path("search/", UserSearchView.as_view(), name="user_search"),
+    path("users/<int:pk>/", PublicProfileView.as_view(), name="public_profile"),
 ]
