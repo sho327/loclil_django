@@ -25,7 +25,10 @@ class ActivateUserView(View):
 
         try:
             # サービス層でアカウントを有効化
-            user = auth_service.activate_user(raw_token_value=token_value)
+            user = auth_service.activate_user(
+                raw_token_value=token_value, 
+                process_name=process_name,
+            )
 
             # 成功: ユーザーを強制的にログインさせる (UX向上のためオプション)
             login(self.request, user)

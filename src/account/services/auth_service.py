@@ -60,7 +60,7 @@ class AuthService:
     # ------------------------------------------------------------------
     # ログイン処理
     # ------------------------------------------------------------------
-    def login(self, email: str, password: str) -> User:
+    def login(self, email: str, password: str, process_name: str) -> User:
         """
         メールアドレスとパスワードで認証済みユーザーインスタンスを返す。
         """
@@ -74,7 +74,12 @@ class AuthService:
         if not user.is_active:
             raise AccountLockedException()
 
-        self.user_repo.update(user, last_login=timezone.now())
+        self.user_repo.update(
+            user, 
+            last_login=timezone.now(), 
+            updated_by=user, 
+            updated_method=process_name
+        )
 
         return user
 
@@ -82,7 +87,7 @@ class AuthService:
     # ユーザ新規登録処理
     # ------------------------------------------------------------------
     @transaction.atomic
-    def register_new_user(self, email: str, password: str, display_name: str) -> User:
+    def register_new_user(self, email: str, password: str, display_name: str, process_name: str) -> User:
         """
         ユーザー新規作成時に必要な一連の処理を実行
         """
@@ -99,7 +104,10 @@ class AuthService:
                 )
                 if m_user_profile_instance:
                     self.profile_repo.update(
-                        m_user_profile_instance, display_name=display_name
+                        m_user_profile_instance, 
+                        display_name=display_name,
+                        updated_by=m_user_instance,
+                        updated_method=process_name
                     )
 
             # 2. T_UserToken(アクティベーション)レコードの作成
@@ -113,6 +121,10 @@ class AuthService:
                 token_hash=token_hash,
                 token_type=TokenTypes.ACTIVATION,
                 expired_at=expired_at,
+                created_by=m_user_instance,
+                updated_by=m_user_instance,
+                created_method=process_name,
+                updated_method=process_name,
             )
 
             self.notification_service.send_activation_email(
@@ -139,7 +151,7 @@ class AuthService:
     # ユーザアクティベーション処理
     # ------------------------------------------------------------------
     @transaction.atomic
-    def activate_user(self, raw_token_value: str) -> User:
+    def activate_user(self, raw_token_value: str, process_name: str) -> User:
         """
         アクティベーションリンクに含まれる生トークンを使用してユーザーを有効化する。
         """
@@ -159,16 +171,26 @@ class AuthService:
         m_user_instance = token_instance.m_user
 
         if m_user_instance.is_active:
-            self.token_repo.soft_delete(token_instance)
+            self.token_repo.soft_delete(
+                instance=token_instance, 
+                user=m_user_instance, 
+                process_name=process_name,
+            )
             # 例外クラスのデフォルトメッセージを使用
             raise UserAlreadyActiveException()
 
         updated_user = self.user_repo.update(
             m_user_instance,
             is_active=True,
+            updated_by=m_user_instance,
+            updated_method=process_name,
         )
 
-        self.token_repo.soft_delete(token_instance)
+        self.token_repo.soft_delete(
+            instance=token_instance, 
+            user=m_user_instance, 
+            process_name=process_name,
+        )
 
         return updated_user
 
@@ -176,7 +198,7 @@ class AuthService:
     # パスワードリセット要求 (メール送信)
     # ------------------------------------------------------------------
     @transaction.atomic
-    def request_password_reset(self, email: str) -> bool:
+    def request_password_reset(self, email: str, process_name: str) -> bool:
         """
         パスワードリセットメールを送信する。
         """
@@ -198,6 +220,10 @@ class AuthService:
                 token_hash=token_hash,
                 token_type=TokenTypes.PASSWORD_RESET,
                 expired_at=expired_at,
+                created_by=user,
+                updated_by=user,
+                created_method=process_name,
+                updated_method=process_name,
             )
 
             # 4. プロフィールから表示名を取得
@@ -212,7 +238,9 @@ class AuthService:
             )
 
             self.notification_service.send_password_reset_email(
-                user, display_name, raw_token
+                user=user,
+                display_name=display_name,
+                raw_token=raw_token,
             )
 
             return True
@@ -234,7 +262,7 @@ class AuthService:
     # パスワードリセット実行
     # ------------------------------------------------------------------
     @transaction.atomic
-    def reset_password(self, raw_token: str, new_password: str) -> User:
+    def reset_password(self, raw_token: str, new_password: str, process_name: str) -> User:
         """
         トークンを検証し、パスワードを更新する。
         """
@@ -260,9 +288,15 @@ class AuthService:
                 user,
                 password=user.password,
                 password_updated_at=now,
+                updated_by=user,
+                updated_method=process_name,
             )
 
-            self.token_repo.soft_delete(token_instance)
+            self.token_repo.soft_delete(
+                instance=token_instance,
+                user=user,
+                process_name=process_name,
+            )
             self._force_logout_all_sessions(user)
 
             return user

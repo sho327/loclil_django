@@ -24,6 +24,10 @@ class M_UserManager(BaseUserManager):
         user.is_superuser = extra_fields.pop("is_superuser", False)
         # user.is_email_verified = extra_fields.pop("is_email_verified", False)
         user.status_code = extra_fields.pop("status_code", AccountStatus.ACTIVE)
+        user.created_by = extra_fields.pop("created_by", None)
+        user.updated_by = extra_fields.pop("updated_by", None)
+        user.created_method = extra_fields.pop("created_method", "M_UserManager")
+        user.updated_method = extra_fields.pop("updated_method", "M_UserManager")
         user.save(using=self._db)
         return user
 
@@ -40,6 +44,10 @@ class M_UserManager(BaseUserManager):
         user.is_active = True
         user.is_superuser = True
         user.status_code = AccountStatus.ACTIVE
+        user.created_by = extra_fields.pop("created_by", None)
+        user.updated_by = extra_fields.pop("updated_by", None)
+        user.created_method = extra_fields.pop("created_method", "M_UserManager")
+        user.updated_method = extra_fields.pop("updated_method", "M_UserManager")
         user.save(using=self._db)
         return user
 

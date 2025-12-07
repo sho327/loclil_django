@@ -67,6 +67,7 @@ class InitialSetupView(LoginRequiredMixin, FormView):
                 display_name=data["display_name"],
                 is_public=data.get("is_public", False),
                 is_email_notify_enabled=is_email_notify_enabled,
+                process_name=process_name,
                 icon_file=icon_file,
                 icon_clear=icon_clear,
             )

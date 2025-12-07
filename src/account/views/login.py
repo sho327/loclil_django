@@ -43,7 +43,7 @@ class LoginView(FormView):
 
         try:
             # 1. AuthServiceのカスタムログインロジックを実行
-            user = auth_service.login(email=email, password=password)
+            user = auth_service.login(email=email, password=password, process_name=process_name)
             is_first_login = user.is_first_login
 
             # 2. 認証成功: Django標準のlogin関数でセッションを確立

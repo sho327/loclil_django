@@ -30,7 +30,10 @@ class RegisterView(FormView):
         try:
             # 1. サービスを介してユーザーを作成・保存
             auth_service.register_new_user(
-                email=email, password=password, display_name=display_name
+                email=email, 
+                password=password, 
+                display_name=display_name, 
+                process_name=process_name,
             )
 
             # 2. 成功後のリダイレクト

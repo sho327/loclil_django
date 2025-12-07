@@ -118,18 +118,22 @@ class BaseRepository:
         instance.save()
         return instance
 
-    def soft_delete(self, instance: Model):
+    def soft_delete(self, instance: Model, user: Model, process_name: str):
         """レコードの論理削除 (deleted_atを設定)"""
         if hasattr(instance, "deleted_at"):
             instance.deleted_at = timezone.now()
-            instance.save(update_fields=["deleted_at"])
+            instance.deleted_by = user
+            instance.deleted_method = process_name
+            instance.save(update_fields=["deleted_at", "deleted_by", "deleted_method"])
 
     def hard_delete(self, instance: Model):
         """レコードの物理削除"""
         instance.delete()
 
-    def restore(self, instance: Model):
+    def restore(self, instance: Model, user: Model, process_name: str):
         """レコードの復元 (deleted_atをNULLに)"""
         if hasattr(instance, "deleted_at"):
             instance.deleted_at = None
-            instance.save(update_fields=["deleted_at"])
+            instance.deleted_by = user
+            instance.deleted_method = process_name
+            instance.save(update_fields=["deleted_at", "deleted_by", "deleted_method"])

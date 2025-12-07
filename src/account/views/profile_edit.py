@@ -86,6 +86,7 @@ class ProfileEditView(LoginRequiredMixin, FormView):
             # サービス層を呼び出し、プロフィールを更新
             self.user_service.update_profile(
                 user=self.request.user,
+                process_name=process_name,
                 display_name=data.get("display_name"),
                 bio=data.get("bio") or None,
                 career_history=data.get("career_history") or None,
@@ -104,7 +105,7 @@ class ProfileEditView(LoginRequiredMixin, FormView):
                 theme=data.get("theme"),
             )
 
-            messages.success(self.request, "プロフィールを更新しました！")
+            messages.success(self.request, "プロフィールを更新しました。")
             return super().form_valid(form)
 
         except IntegrityError as e:

@@ -27,7 +27,10 @@ class PasswordResetRequestView(FormView):
 
         try:
             # サービスに処理を委譲。ユーザーの有無にかかわらず成功を返す（列挙攻撃対策）。
-            auth_service.request_password_reset(email)
+            auth_service.request_password_reset(
+                email=email, 
+                process_name=process_name
+            )
 
             # 成功メッセージを設定（ユーザーがメールをチェックすべきことを通知）
             # messages.info(self.request, "パスワード再設定用のメールを送信しました。")

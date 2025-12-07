@@ -20,5 +20,8 @@ def create_user_profile(sender, instance, created, **kwargs):
             display_name=(
                 instance.email.split("@")[0] if instance.email else "新規ユーザー"
             ),
-            # age, icon_url など、nullableなフィールドは省略可能
+            created_by=instance,
+            updated_by=instance,
+            created_method="Signal:create_user_profile",
+            updated_method="Signal:create_user_profile",
         )

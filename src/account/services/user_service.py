@@ -68,6 +68,7 @@ class UserService:
         display_name: str,
         is_public: bool,
         is_email_notify_enabled: bool,
+        process_name: str,
         icon_file: Optional[UploadedFile] = None,
         icon_clear: bool = False,
     ) -> User:
@@ -79,7 +80,13 @@ class UserService:
             profile = self.profile_repo.get_alive_one_or_none(m_user=user.pk)
             if not profile:
                 # ユーザーに関連付けられたプロフィールがない場合、作成
-                profile = self.profile_repo.create(m_user=user)
+                profile = self.profile_repo.create(
+                    m_user=user,
+                    created_by=user,
+                    updated_by=user,
+                    created_method=process_name,
+                    updated_method=process_name,
+                )
 
             # 2. アイコンファイルの処理: DBに格納すべき値を取得
             icon_value = self._handle_icon_upload(user, icon_file)
@@ -93,6 +100,8 @@ class UserService:
                 "is_notify_like": is_email_notify_enabled,
                 "is_notify_comment": is_email_notify_enabled,
                 "is_notify_follow": is_email_notify_enabled,
+                "updated_by": user,
+                "updated_method": process_name,
             }
 
             # アイコンが設定された場合、または削除フラグがある場合
@@ -109,8 +118,8 @@ class UserService:
                 updated_user = self.user_repo.update(
                     user,
                     is_first_login=False,
-                    # M_Userのupdated_methodフィールドを設定
-                    updated_method="INITIAL_SETUP",  # LOG_METHOD.INITIAL_SETUPが存在しないため文字列を直接指定
+                    updated_by=user,
+                    updated_method=process_name,
                 )
             else:
                 updated_user = user
@@ -138,6 +147,7 @@ class UserService:
     def update_profile(
         self,
         user: User,
+        process_name: str,
         display_name: Optional[str] = None,
         bio: Optional[str] = None,
         career_history: Optional[str] = None,
@@ -163,13 +173,22 @@ class UserService:
             profile = self.profile_repo.get_alive_one_or_none(m_user=user.pk)
             if not profile:
                 # ユーザーに関連付けられたプロフィールがない場合、作成
-                profile = self.profile_repo.create(m_user=user)
+                profile = self.profile_repo.create(
+                    m_user=user,
+                    created_by=user,
+                    updated_by=user,
+                    created_method=process_name,
+                    updated_method=process_name,
+                )
 
             # 2. アイコンファイルの処理: DBに格納すべき値を取得
             icon_value = self._handle_icon_upload(user, icon_file)
 
             # 3. UserProfileの更新データ辞書を作成（Noneでない値のみ更新）
-            update_data = {}
+            update_data = {
+                "updated_by": user,
+                "updated_method": process_name,
+            }
             if display_name is not None:
                 update_data["display_name"] = display_name
             if bio is not None:

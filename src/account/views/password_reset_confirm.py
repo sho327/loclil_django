@@ -39,7 +39,11 @@ class PasswordResetConfirmView(FormView):
 
         try:
             # サービス層でトークン検証とパスワード更新を実行
-            user = auth_service.reset_password(self.token_value, new_password)
+            user = auth_service.reset_password(
+                raw_token_value=self.token_value,
+                new_password=new_password,
+                process_name=process_name,
+            )
 
             # 成功メッセージを設定し、ログイン画面へリダイレクト
             # messages.success(
