@@ -26,10 +26,42 @@
         return {
             // display_name の初期値はDjangoから受け取る
             displayName: "{{ form.display_name.value|default_if_none:'' }}", 
+            previewUrl: '{% if user.user_profile.icon %}{{ user.user_profile.icon.url }}{% endif %}', 
+            isDragging: false,
+            uploadedFile: null,
+            iconClear: false,
+
+            handleFileChange(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    this.previewUrl = URL.createObjectURL(file);
+                    this.uploadedFile = file;
+                    this.iconClear = false;
+                }
+            },
+
+            handleDrop(event) {
+                this.isDragging = false;
+                const file = event.dataTransfer.files[0];
+                if (file) {
+                    if (file.type.startsWith('image/')) {
+                        this.$refs.fileInput.files = event.dataTransfer.files;
+                        this.previewUrl = URL.createObjectURL(file);
+                        this.uploadedFile = file;
+                        this.iconClear = false;
+                    }
+                }
+            },
             
-            submitProfile() {
-                // Django標準のフォーム送信に戻す
-                this.$refs.djangoForm.submit();
+            triggerFileInput() {
+                this.$refs.fileInput.click();
+            },
+            
+            clearIcon() {
+                this.previewUrl = '';
+                this.uploadedFile = null;
+                this.$refs.fileInput.value = '';
+                this.iconClear = true;
             }
         }
     }
@@ -106,11 +138,56 @@
           <label class="label">
             <span class="label-text font-bold">{{ field.label }}</span>
           </label>
-          {# ImageFieldはinput type="file" としてレンダリングされる #}
-          <input type="file" 
-               name="{{ field.name }}"
-               id="{{ field.id_for_label }}"
-               class="file-input file-input-bordered w-full rounded-md {% if field.errors %}input-error{% endif %}"/>
+          
+            <div class="relative border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-all duration-200 group"
+                 :class="{ 'border-primary bg-primary/5': isDragging, 'border-base-300 hover:border-primary hover:bg-base-200': !isDragging }"
+                 @dragover.prevent="isDragging = true"
+                 @dragleave.prevent="isDragging = false"
+                 @drop.prevent="handleDrop($event)"
+                 @click="triggerFileInput()">
+                 
+                 <input type="file" 
+                      name="{{ field.name }}"
+                      id="{{ field.id_for_label }}"
+                      accept="image/*"
+                      class="hidden"
+                      x-ref="fileInput"
+                      @change="handleFileChange($event)"/>
+
+                 <div class="flex flex-col items-center gap-4 pointer-events-none">
+                    <!-- Preview Area -->
+                    <div class="avatar">
+                        <div class="w-24 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2 bg-base-100 shadow-md">
+                            <template x-if="previewUrl">
+                                <img :src="previewUrl" class="object-cover" alt="Profile Icon" />
+                            </template>
+                            <template x-if="!previewUrl">
+                                <div class="flex items-center justify-center w-full h-full bg-base-300 text-base-content/50">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <p class="font-medium text-sm">
+                            <span class="text-primary">画像を選択</span> またはドラッグ
+                        </p>
+                    </div>
+                 </div>
+            </div>
+            
+            <!-- Remove Button -->
+            <div class="mt-2 text-center" x-show="previewUrl" style="display: none;">
+                <button type="button" class="btn btn-xs btn-ghost text-error" @click="clearIcon()">
+                    画像を削除
+                </button>
+            </div>
+            
+            <!-- Hidden inputs for form submission -->
+            <input type="checkbox" name="icon_clear" class="hidden" x-model="iconClear" />
                
           {% if field.help_text %}
             <label class="label">
@@ -174,8 +251,7 @@
         {# AlpineのsubmitLoginを呼び出すか、直接submitにする #}
         <button type="submit" 
                 class="btn btn-primary rounded-md" 
-                :disabled="!displayName"
-                @click="submitProfile()">
+                :disabled="!displayName">
           設定を完了してダッシュボードへ
         </button>
       </div>

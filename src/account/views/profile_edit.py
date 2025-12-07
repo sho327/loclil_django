@@ -139,5 +139,5 @@ class ProfileEditView(LoginRequiredMixin, FormView):
                 logger_name=LOG_METHOD.APPLICATION.value,
                 exc_info=True,  # 予測不可能なエラーのためスタックトレースを含める
             )
-            messages.error(self.request, "予期せぬシステムエラーが発生しました。")
+            form.add_error(None, "予期せぬエラーが発生しました。")
             return self.form_invalid(form)

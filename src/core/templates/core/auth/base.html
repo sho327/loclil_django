@@ -66,6 +66,19 @@
 			}
 		</script>
 		<main>
+			{# Flash Messages #}
+			{% if messages %}
+				<div class="toast toast-top toast-center z-50">
+					{% for message in messages %}
+						<div class="alert {% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %} shadow-lg">
+							<div>
+								<span>{{ message }}</span>
+							</div>
+						</div>
+					{% endfor %}
+				</div>
+			{% endif %}
+
 			{% block content %}{# 各ページの内容がここに入る #}{% endblock %}
 		</main>
 		{% block extra_js_scripts %}{% endblock %}

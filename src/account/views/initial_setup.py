@@ -53,6 +53,7 @@ class InitialSetupView(LoginRequiredMixin, FormView):
     def form_valid(self, form):
         data = form.cleaned_data
         icon_file = self.request.FILES.get("icon", None)
+        icon_clear = data.get("icon_clear", False)
         is_email_notify_enabled = data.get("is_email_notify_enabled", False)
         user_id = str(self.request.user.pk)
 
@@ -64,6 +65,7 @@ class InitialSetupView(LoginRequiredMixin, FormView):
                 is_public=data.get("is_public", False),
                 is_email_notify_enabled=is_email_notify_enabled,
                 icon_file=icon_file,
+                icon_clear=icon_clear,
             )
 
             messages.success(self.request, "初期設定が完了しました！")
@@ -108,5 +110,5 @@ class InitialSetupView(LoginRequiredMixin, FormView):
                 logger_name=LOG_METHOD.APPLICATION.value,
                 exc_info=True,  # 予測不可能なエラーのためスタックトレースを含める
             )
-            messages.error(self.request, "予期せぬシステムエラーが発生しました。")
+            form.add_error(None, "予期せぬシステムエラーが発生しました。")
             return self.form_invalid(form)

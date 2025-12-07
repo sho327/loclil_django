@@ -69,6 +69,7 @@ class UserService:
         is_public: bool,
         is_email_notify_enabled: bool,
         icon_file: Optional[UploadedFile] = None,
+        icon_clear: bool = False,
     ) -> User:
         """
         ユーザーの初回設定を更新し、is_first_loginフラグをFalseに設定する。
@@ -94,9 +95,11 @@ class UserService:
                 "is_notify_follow": is_email_notify_enabled,
             }
 
-            # アイコンが設定された場合のみ追加
+            # アイコンが設定された場合、または削除フラグがある場合
             if icon_value is not None:
                 update_data["icon"] = icon_value
+            elif icon_clear:
+                update_data["icon"] = None
 
             # 4. UserProfileの更新実行
             self.profile_repo.update(profile, **update_data)

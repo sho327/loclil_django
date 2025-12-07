@@ -27,6 +27,10 @@ class InitialSetupForm(forms.Form):
         help_text="プロフィールアイコン画像をアップロードしてください。",
     )
 
+    icon_clear = forms.BooleanField(
+        required=False, widget=forms.HiddenInput, initial=False
+    )
+
     is_public = forms.BooleanField(
         label="プロフィールを一般公開する",
         required=False,
