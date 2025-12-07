@@ -3,7 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic.edit import FormView
 
-from account.forms.profile import ProfileEditForm
+from account.forms.profile_edit import ProfileEditForm
 from account.services.user_service import UserService
 from core.consts import LOG_METHOD
 from core.decorators.logging_sql_queries import logging_sql_queries
