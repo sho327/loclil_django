@@ -12,7 +12,7 @@
   </div>
 
   {% if profile %}
-    <div class="card bg-base-100 shadow-xl">
+    <div class="card bg-base-100 shadow-xl rounded-lg">
       <div class="card-body">
         {# 基本情報セクション #}
         <div class="flex items-start gap-6 mb-6">
@@ -107,19 +107,19 @@
             <h3 class="text-xl font-semibold mb-3">公開設定</h3>
             <p class="text-sm text-base-content/70">
               {% if profile.is_public %}
-                <span class="badge badge-success">一般公開</span>
+                <span class="badge badge-success text-white">一般公開</span>
               {% else %}
-                <span class="badge badge-warning">ログインユーザーのみ</span>
+                <span class="badge badge-warning text-white">ログインユーザーのみ</span>
               {% endif %}
             </p>
           </div>
           <div>
             <h3 class="text-xl font-semibold mb-3">通知設定</h3>
             <div class="text-sm text-base-content/70 space-y-1">
-              <p>メール通知: {% if profile.is_email_notify_enabled %}<span class="badge badge-success">ON</span>{% else %}<span class="badge badge-error">OFF</span>{% endif %}</p>
-              <p>いいね通知: {% if profile.is_notify_like %}<span class="badge badge-success">ON</span>{% else %}<span class="badge badge-error">OFF</span>{% endif %}</p>
-              <p>コメント通知: {% if profile.is_notify_comment %}<span class="badge badge-success">ON</span>{% else %}<span class="badge badge-error">OFF</span>{% endif %}</p>
-              <p>フォロー通知: {% if profile.is_notify_follow %}<span class="badge badge-success">ON</span>{% else %}<span class="badge badge-error">OFF</span>{% endif %}</p>
+              <p>メール通知: {% if profile.is_email_notify_enabled %}<span class="badge badge-success text-white">ON</span>{% else %}<span class="badge badge-error text-white">OFF</span>{% endif %}</p>
+              <p>いいね通知: {% if profile.is_notify_like %}<span class="badge badge-success text-white">ON</span>{% else %}<span class="badge badge-error text-white">OFF</span>{% endif %}</p>
+              <p>コメント通知: {% if profile.is_notify_comment %}<span class="badge badge-success text-white">ON</span>{% else %}<span class="badge badge-error text-white">OFF</span>{% endif %}</p>
+              <p>フォロー通知: {% if profile.is_notify_follow %}<span class="badge badge-success text-white">ON</span>{% else %}<span class="badge badge-error text-white">OFF</span>{% endif %}</p>
             </div>
           </div>
         </div>
