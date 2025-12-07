@@ -82,6 +82,7 @@ class ProfileEditView(LoginRequiredMixin, FormView):
                 is_notify_comment=data.get("is_notify_comment"),
                 is_notify_follow=data.get("is_notify_follow"),
                 icon_file=icon_file,
+                icon_clear=data.get("icon_clear", False),
             )
 
             messages.success(self.request, "プロフィールを更新しました！")

@@ -23,6 +23,13 @@ class ProfileEditForm(forms.Form):
         help_text="プロフィールアイコン画像をアップロードしてください。",
     )
 
+    icon_clear = forms.BooleanField(
+        label="アイコン削除",
+        required=False,
+        widget=forms.HiddenInput,
+        help_text="既存のアイコンを削除します。",
+    )
+
     # 詳細情報
     bio = forms.CharField(
         label="自己紹介文",

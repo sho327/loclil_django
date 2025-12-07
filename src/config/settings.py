@@ -179,7 +179,19 @@ USE_I18N = True
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
+# STATIC_URL (必須)
+# ブラウザからアクセスする際のURLパス
 STATIC_URL = "static/"
+# STATICFILES_DIRS (任意)
+# アプリケーションフォルダとは別に、静的ファイルを置く場所を指定
+# os.path.join(BASE_DIR, 'static') のように記述することが多い
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),  # 例: プロジェクト直下の assets フォルダ
+    # 'C:/Users/user/project/common_static' # 必要に応じて絶対パスも可
+]
+# STATIC_ROOT (本番運用で必須)
+# collectstatic コマンドの出力先ディレクトリ
+# STATICFILES_DIRS や アプリケーション内の static フォルダにある全てのファイルがここにコピーされる
 STATIC_ROOT = BASE_DIR / "staticfiles"  # デプロイ時に必要
 
 # Media files (ユーザーアップロードファイル)

@@ -149,6 +149,7 @@ class UserService:
         is_notify_comment: Optional[bool] = None,
         is_notify_follow: Optional[bool] = None,
         icon_file: Optional[UploadedFile] = None,
+        icon_clear: bool = False,
     ) -> User:
         """
         ユーザープロフィールを更新する。
@@ -192,9 +193,11 @@ class UserService:
             if is_notify_follow is not None:
                 update_data["is_notify_follow"] = is_notify_follow
 
-            # アイコンが設定された場合のみ追加
+            # アイコンが設定された場合、または削除フラグがある場合
             if icon_value is not None:
                 update_data["icon"] = icon_value
+            elif icon_clear:
+                update_data["icon"] = None
 
             # 4. UserProfileの更新実行
             if update_data:
