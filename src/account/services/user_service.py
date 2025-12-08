@@ -1,14 +1,17 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import UploadedFile
 from django.db import transaction
+from django.db.models import QuerySet
 
+from account.models.m_user_profile import M_UserProfile
 from account.repositories.m_user_profile_repository import M_UserProfileRepository
 from account.repositories.m_user_repository import M_UserRepository
 from account.repositories.t_user_token_repository import T_UserTokenRepository
+from account.exceptions import ProfileNotFoundException, ProfileAccessDeniedException
 from core.consts import LOG_METHOD
 from core.exceptions import ExternalServiceError, IntegrityError
 from core.services.storage_service import StorageService
@@ -242,3 +245,99 @@ class UserService:
                     "user_id": str(user.pk) if user else "unknown",
                 },
             )
+
+    # ------------------------------------------------------------------
+    # ユーザー検索・プロフィール取得
+    # ------------------------------------------------------------------
+    def get_user_profile(self, user: User) -> M_UserProfile:
+        """
+        ユーザーのプロフィールを取得する（自分自身のプロフィール用）
+
+        Args:
+            user: ユーザーインスタンス
+
+        Returns:
+            ユーザープロフィール
+
+        Raises:
+            ProfileNotFoundException: プロフィールが存在しない場合
+        """
+        profile = self.profile_repo.get_alive_one_or_none(m_user=user.pk)
+        
+        if profile is None:
+            raise ProfileNotFoundException(
+                details={"user_id": str(user.pk)}
+            )
+        
+        return profile
+
+    def search_public_profiles(
+        self,
+        search_word: Optional[str] = None,
+        location: Optional[str] = None,
+        skill_tag: Optional[str] = None,
+    ) -> QuerySet[M_UserProfile]:
+        """
+        公開プロフィールを検索する
+
+        Args:
+            search_word: 表示名またはスキルタグで検索するキーワード
+            location: 所在地で検索するキーワード
+            skill_tag: スキルタグで検索するキーワード
+
+        Returns:
+            検索条件に合致するプロフィールのQuerySet
+        """
+        return self.profile_repo.find_public_profiles(
+            search_word=search_word,
+            location=location,
+            skill_tag=skill_tag,
+        )
+
+    def get_public_profile(
+        self, profile_id: int, requesting_user: User
+    ) -> M_UserProfile:
+        """
+        公開プロフィールを取得する
+        非公開プロフィールの場合、自分自身のプロフィールのみ閲覧可能
+
+        Args:
+            profile_id: プロフィールID
+            requesting_user: リクエストしているユーザー
+
+        Returns:
+            プロフィール
+
+        Raises:
+            ProfileNotFoundException: プロフィールが存在しない場合
+            ProfileAccessDeniedException: アクセス権限がない場合
+        """
+        profile = self.profile_repo.get_alive_by_pk(profile_id)
+
+        if profile is None:
+            raise ProfileNotFoundException(
+                details={"profile_id": profile_id}
+            )
+
+        # 公開プロフィール、または自分自身のプロフィールの場合のみ閲覧可能
+        if not profile.is_public and profile.m_user != requesting_user:
+            raise ProfileAccessDeniedException(
+                details={"profile_id": profile_id, "user_id": str(requesting_user.pk)}
+            )
+
+        return profile
+
+    def parse_skill_tags(self, profile: M_UserProfile) -> List[str]:
+        """
+        スキルタグをパースしてリストに変換する
+
+        Args:
+            profile: ユーザープロフィール
+
+        Returns:
+            スキルタグのリスト
+        """
+        if not profile.skill_tags_raw:
+            return []
+
+        return [tag.strip() for tag in profile.skill_tags_raw.split(",") if tag.strip()]

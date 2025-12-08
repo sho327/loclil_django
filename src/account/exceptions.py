@@ -45,6 +45,24 @@ class EmailDuplicationError(AccountError):
     message_id = "ERR_ACC_104"
 
 
+class ProfileNotFoundException(AccountError):
+    """
+    ユーザープロフィールが見つからない場合に発生。
+    """
+
+    default_message = "ユーザープロフィールが見つかりません。"
+    message_id = "ERR_ACC_105"
+
+
+class ProfileAccessDeniedException(AccountError):
+    """
+    非公開プロフィールへのアクセスが拒否された場合に発生。
+    """
+
+    default_message = "このプロフィールは非公開です。"
+    message_id = "ERR_ACC_106"
+
+
 class AuthenticationFailedException(AccountError):
     """メールアドレスまたはパスワードが誤っている場合"""
 

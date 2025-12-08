@@ -3,6 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic.edit import FormView
 
+from account.exceptions import ProfileNotFoundException
 from account.forms.profile_edit import ProfileEditForm
 from account.services.user_service import UserService
 from core.consts import LOG_METHOD
@@ -12,6 +13,7 @@ from core.utils.log_helpers import log_output_by_msg_id
 
 process_name = "ProfileEditView"
 
+
 class ProfileEditView(LoginRequiredMixin, FormView):
     """
     プロフィール編集画面
@@ -20,7 +22,6 @@ class ProfileEditView(LoginRequiredMixin, FormView):
     template_name = "account/profile_edit.html"
     form_class = ProfileEditForm
     success_url = reverse_lazy("account:profile")
-    user_service = UserService()
 
     # SQLログデコレータを適用
     @logging_sql_queries(process_name=process_name)
@@ -30,10 +31,12 @@ class ProfileEditView(LoginRequiredMixin, FormView):
         """
         initial = super().get_initial()
         user = self.request.user
+        service = UserService()
 
         if user.is_authenticated:
             try:
-                profile = user.user_profile
+                # サービス層を使用してプロフィールを取得
+                profile = service.get_user_profile(user)
                 initial["display_name"] = profile.display_name
                 initial["theme"] = profile.theme
                 initial["bio"] = profile.bio
@@ -48,7 +51,25 @@ class ProfileEditView(LoginRequiredMixin, FormView):
                 initial["is_notify_like"] = profile.is_notify_like
                 initial["is_notify_comment"] = profile.is_notify_comment
                 initial["is_notify_follow"] = profile.is_notify_follow
-            except Exception:
+            except ProfileNotFoundException as e:
+                # ログ出力: プロフィール未作成エラーを記録
+                log_output_by_msg_id(
+                    log_id="MSGE901",
+                    params=[str(user.pk), e.message_id],
+                    logger_name=LOG_METHOD.APPLICATION.value,
+                )
+                # 初期値は空のまま
+                pass
+            except Exception as e:
+                # ログ出力: 予期せぬエラーを記録
+                error_detail = f"プロフィール取得中にエラーが発生しました。ユーザーID: {user.pk} エラー: {str(e)}"
+                log_output_by_msg_id(
+                    log_id="MSGE002",
+                    params=[error_detail],
+                    logger_name=LOG_METHOD.APPLICATION.value,
+                    exc_info=True,
+                )
+                # 初期値は空のまま
                 pass
 
         return initial
@@ -81,10 +102,11 @@ class ProfileEditView(LoginRequiredMixin, FormView):
         data = form.cleaned_data
         icon_file = self.request.FILES.get("icon", None)
         user_id = str(self.request.user.pk)
+        service = UserService()
 
         try:
             # サービス層を呼び出し、プロフィールを更新
-            self.user_service.update_profile(
+            service.update_profile(
                 user=self.request.user,
                 process_name=process_name,
                 display_name=data.get("display_name"),

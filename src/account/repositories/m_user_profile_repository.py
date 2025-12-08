@@ -1,6 +1,6 @@
-from typing import overload
+from typing import overload, Optional
 
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Q
 
 from account.models import M_UserProfile
 from core.repositories import BaseRepository
@@ -79,6 +79,36 @@ class M_UserProfileRepository(BaseRepository):
     # ------------------------------------------------------------------
     # モデルに対する固有のデータ取得処理
     # ------------------------------------------------------------------
-    def search_by_display_name(self, keyword: str) -> M_UserProfileQuerySet:
-        """表示名（display_name）の部分一致でプロフィールを検索する"""
-        return self._get_alive_queryset().filter(display_name__icontains=keyword)
+    def find_public_profiles(
+        self,
+        search_word: Optional[str] = None,
+        location: Optional[str] = None,
+        skill_tag: Optional[str] = None,
+    ) -> M_UserProfileQuerySet:
+        """
+        公開プロフィールを検索する
+
+        Args:
+            search_word: 表示名またはスキルタグで検索するキーワード
+            location: 所在地で検索するキーワード
+            skill_tag: スキルタグで検索するキーワード
+
+        Returns:
+            検索条件に合致するプロフィールのQuerySet
+        """
+        queryset = self._get_alive_queryset().filter(is_public=True).select_related("m_user")
+
+        # 検索条件を組み立て
+        if search_word:
+            queryset = queryset.filter(
+                Q(display_name__icontains=search_word)
+                | Q(skill_tags_raw__icontains=search_word)
+            )
+
+        if location:
+            queryset = queryset.filter(location__icontains=location)
+
+        if skill_tag:
+            queryset = queryset.filter(skill_tags_raw__icontains=skill_tag)
+
+        return queryset.order_by("-created_at")

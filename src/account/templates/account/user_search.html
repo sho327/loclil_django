@@ -13,25 +13,31 @@
   {# 検索フォーム #}
   <div class="card bg-base-100 shadow p-4 md:p-6 mb-6 rounded-lg">
     <form method="get" action="" class="space-y-4 md:space-y-0 md:flex md:gap-4 items-end">
+      {% csrf_token %}
+      
+      {# フォームエラー表示 #}
+      {% if form.errors %}
+        <div class="alert alert-error mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <span>検索条件にエラーがあります。</span>
+        </div>
+      {% endif %}
       
       <div class="form-control flex-1">
-        <label class="label"><span class="label-text">ユーザー名、スキル、所在地</span></label>
-        <input type="text" 
-               name="q" 
-               value="{{ query }}" 
-               placeholder="例: React, Python, Taro Yamada" 
-               class="input input-bordered w-full" />
+        <label class="label"><span class="label-text">ユーザー名、スキル</span></label>
+        {{ form.search_word }}
+        {% if form.search_word.errors %}
+          <label class="label"><span class="label-text-alt text-error">{{ form.search_word.errors.0 }}</span></label>
+        {% endif %}
       </div>
       
-      {# 絞り込み条件（現時点ではUIのみ） #}
+      {# 将来的な拡張用のフィールド #}
       <div class="form-control w-full md:w-40">
-        <label class="label"><span class="label-text">絞り込み条件</span></label>
-        <select class="select select-bordered" name="filter">
-          <option value="all">全て</option>
-          <option value="skill">スキル名</option>
-          <option value="location">所在地</option>
-          <option value="popular">フォロワー数順</option>
-        </select>
+        <label class="label"><span class="label-text">所在地</span></label>
+        {{ form.location }}
+        {% if form.location.errors %}
+          <label class="label"><span class="label-text-alt text-error">{{ form.location.errors.0 }}</span></label>
+        {% endif %}
       </div>
       
       <div class="w-full md:w-auto">
@@ -117,7 +123,7 @@
     <div class="flex justify-center mt-8">
       <div class="join">
         {% if page_obj.has_previous %}
-          <a href="?q={{ query }}&page={{ page_obj.previous_page_number }}" class="join-item btn">«</a>
+          <a href="?search_word={{ search_word }}&location={{ location }}&page={{ page_obj.previous_page_number }}" class="join-item btn">«</a>
         {% else %}
           <button class="join-item btn btn-disabled">«</button>
         {% endif %}
@@ -125,7 +131,7 @@
         <button class="join-item btn no-animation">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</button>
         
         {% if page_obj.has_next %}
-          <a href="?q={{ query }}&page={{ page_obj.next_page_number }}" class="join-item btn">»</a>
+          <a href="?search_word={{ search_word }}&location={{ location }}&page={{ page_obj.next_page_number }}" class="join-item btn">»</a>
         {% else %}
           <button class="join-item btn btn-disabled">»</button>
         {% endif %}
