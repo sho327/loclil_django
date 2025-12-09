@@ -54,7 +54,7 @@
   <h2 class="text-xl font-semibold mb-3">検索結果 (<span class="text-primary">{{ paginator.count|default:profiles.count|default:0 }}</span>件)</h2>
   
   {# 検索結果リスト #}
-  <div class="space-y-3">
+  <div class="space-y-2">
     {% for profile in profiles %}
       <div class="card bg-base-100 shadow p-4 flex flex-col md:flex-row items-start md:items-center justify-between rounded-lg hover:shadow-md transition duration-200">
         
